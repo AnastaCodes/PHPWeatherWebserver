@@ -34,14 +34,17 @@ function makeGetRequest($url)
 }
 
 // Получаем URI запроса
-$requestUri = $_SERVER['REQUEST_URI'];
+$requestArray = [];
+parse_str($_SERVER['QUERY_STRING'], $requestArray);
+
+$route = $requestArray['route'] ?? null;
+$url = urldecode($requestArray['url'] ?? '');
 
 // Определяем маршруты
-if (preg_match('/^\/openweathermap\/(.+)/', $requestUri, $matches)) {
-    $query = $matches[1];
+if ($route === 'openweathermap') {
     $apiUrl = sprintf(
         "https://api.openweathermap.org/data/2.5/%s&appid=%s",
-        $query,
+        $url,
         OPENWEATHERMAP_API_KEY
     );
 
@@ -49,12 +52,10 @@ if (preg_match('/^\/openweathermap\/(.+)/', $requestUri, $matches)) {
     header('Content-Type: application/json');
     echo $response;
     
-} elseif (preg_match('/^\/ipify\/(.+)/', $requestUri, $matches)) {
-    $query = $matches[1];
-
+} elseif ($route === 'ipify') {
     $apiUrl = sprintf(
         "https://geo.ipify.org/api/v2/%s&apiKey=%s",
-        $query,
+        $url,
         IPIFY_API_KEY
     );
 
