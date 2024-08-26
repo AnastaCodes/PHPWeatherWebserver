@@ -33,6 +33,16 @@ function makeGetRequest($url)
     return $response;
 }
 
+// Функция для установки CORS-заголовков
+function setCorsHeaders() {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type');
+}
+
+// Устанавливаем CORS-заголовки
+setCorsHeaders();
+
 // Получаем URI запроса
 $requestArray = [];
 parse_str($_SERVER['QUERY_STRING'], $requestArray);
