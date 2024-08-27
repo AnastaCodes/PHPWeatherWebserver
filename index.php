@@ -1,14 +1,9 @@
 <?php
 
-// Включаем отображение ошибок для отладки (в продакшене лучше отключить)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 define('OPENWEATHERMAP_API_KEY', getenv('OPENWEATHERMAP_API_KEY'));
 define('IPIFY_API_KEY', getenv('IPIFY_API_KEY'));
 
-// Функция для выполнения GET-запросов
+// Function for performing GET requests
 function makeGetRequest($url)
 {
     $curl = curl_init();
@@ -33,24 +28,40 @@ function makeGetRequest($url)
     return $response;
 }
 
-// Функция для установки CORS-заголовков
+// Function for setting CORS headers
 function setCorsHeaders() {
-    header('Access-Control-Allow-Origin: *');
+    // Get Origin header from request
+    $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+
+    // Array of allowed domains
+    $allowed_origins = [
+        'https://advanced-weather-fetcher.vercel.app',
+        'https://anastacodes.github.io'
+    ];
+
+    // Check if Origin is allowed
+    if (in_array($origin, $allowed_origins)) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+    } else {
+        header('Access-Control-Allow-Origin: '); // Не разрешаем запрос
+        exit;
+    }
+
     header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type');
 }
 
-// Устанавливаем CORS-заголовки
+// Set CORS headers
 setCorsHeaders();
 
-// Получаем URI запроса
+// Get the request URI
 $requestArray = [];
 parse_str($_SERVER['QUERY_STRING'], $requestArray);
 
 $route = $requestArray['route'] ?? null;
 $url = urldecode($requestArray['url'] ?? '');
 
-// Определяем маршруты
+// Define routes
 if ($route === 'openweathermap') {
     $apiUrl = sprintf(
         "https://api.openweathermap.org/data/2.5/%s&appid=%s",
