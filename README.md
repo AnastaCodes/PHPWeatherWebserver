@@ -1,33 +1,39 @@
 # Weather API Proxy Server
 
-## Description
+**A lightweight PHP proxy that keeps OpenWeatherMap and ipify API keys server-side — the browser never sees them.**
 
-Weather API Proxy Server is a lightweight PHP server designed to act as a proxy for securely interacting with external APIs, such as OpenWeatherMap and Ipify. This server hides API keys, ensuring they are not exposed to the client-side, and handles all API requests securely. It supports CORS for cross-origin requests and allows for easy integration with frontend applications.
+Built as the backend for [AdvancedWeatherFetcher](https://github.com/AnastaCodes/AdvancedWeatherFetcher): instead of shipping API keys in client-side JavaScript (where anyone can read them), the frontend calls this proxy and the proxy injects the keys from environment variables.
 
-## Features
+## Architecture
 
-- **Proxy Server**: Handles requests to the OpenWeatherMap and Ipify APIs, ensuring API keys are not exposed.
-- **CORS Support**: Allows cross-origin requests, making it easy to integrate with frontend applications.
-- **Simple Setup**: Easy to deploy with minimal configuration.
-- **Secure API Interaction**: Protects sensitive API keys by processing all requests server-side.
+```
+Browser (AdvancedWeatherFetcher) ──▶ this proxy (PHP + cURL) ──▶ OpenWeatherMap / ipify
+```
 
-## Technologies Used
+## How it works
 
-- PHP
-- cURL
-- OpenWeatherMap API
-- Ipify API
+- API keys are read from environment variables (`OPENWEATHERMAP_API_KEY`, `IPIFY_API_KEY`) — never committed, never sent to the client
+- Two routes: `openweathermap` (proxied to `api.openweathermap.org/data/2.5/*`) and `ipify` (proxied to `geo.ipify.org/api/v2/*`)
+- CORS headers restrict browser access to the known frontend origins
+- Responses are passed through as JSON
 
-## Usage
+Example request:
 
-This server is designed for personal use only and restricts access to specific weather data endpoints. If you wish to use a similar setup, you can clone this repository and deploy your own instance.
+```
+GET /?route=openweathermap&url=weather%3Fq%3DBerlin%26units%3Dmetric
+→ proxied to api.openweathermap.org/data/2.5/weather?q=Berlin&units=metric&appid=<server-side key>
+```
 
-To replicate this setup, clone the repository, configure your API keys, and host the server on your own domain or local environment.
+## Deploy your own
+
+1. Host `index.php` on any PHP-capable server (the original instance ran on Adaptable.app, which has since shut down)
+2. Set the two environment variables with your API keys
+3. Update the allowed origins in `setCorsHeaders()` to match your frontend
+
+## Tech stack
+
+PHP · cURL · OpenWeatherMap API · ipify API
 
 ## Acknowledgments
 
-- Thanks to OpenWeatherMap for the API used in this project.
-
-## Contact
-
-If you have any questions or suggestions, please feel free to reach out.
+- Weather data by [OpenWeatherMap](https://openweathermap.org/), IP lookup by [ipify](https://www.ipify.org/).
